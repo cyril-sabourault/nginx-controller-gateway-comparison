@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app1
+  labels:
+    external-http-allowed: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app2

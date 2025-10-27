@@ -1,0 +1,25 @@
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: external-http
+  namespace: gateway-system
+  annotations:
+    networking.gke.io/certmap: gateway-cert-map
+    networking.gke.io/static-ip: gateway-external-ip
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  addresses:
+    - type: NamedAddress
+      value: gateway-external-ip
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        kinds:
+          - kind: HTTPRoute
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              external-http-allowed: "true"
