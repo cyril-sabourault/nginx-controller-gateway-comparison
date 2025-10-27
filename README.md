@@ -1,6 +1,6 @@
 # NGINX-controller and Gateway API Comparison
 
-Terrraform resources to deploy a GKE cluster with both Gateway API and a NGINX Ingress Controller using cert-manager to compare ingress methods.
+Terrraform and Kubernetes resources to deploy a GKE cluster with both Gateway API and a NGINX Ingress Controller using cert-manager and a small app to compare ingress methods.
 
 ## Usage
 
