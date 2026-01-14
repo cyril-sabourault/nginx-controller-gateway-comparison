@@ -1,0 +1,29 @@
+{{- range $name, $route := .Values.httpRoutes }}
+{{- if $route.backendPolicy}}
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ $name }}-policy
+  namespace: {{ $route.namespace | default "default" | quote }}
+spec:
+  default:
+    connectionDraining:
+        drainingTimeoutSec: {{ $route.backendPolicy.drainingTimeoutSec | default 60 }}
+    sessionAffinity:
+      type: {{ $route.backendPolicy.sessionAffinityType | default "CLIENT_IP" | quote }}
+    timeoutSec: {{ $route.backendPolicy.timeoutSec | default 40}}
+    iap:
+      enabled: {{ $route.backendPolicy.enableIAP | default false}}
+      {{- if $route.backendPolicy.enableIAP  }}
+      oauth2ClientSecret:
+        name: {{ $route.backendPolicy.iapSecretName | default (printf "%s-iap" $name) | quote }}
+      clientID: {{ $route.backendPolicy.IAP_CLIENT_ID | quote}}
+      {{- end }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ $route.backend.name }}
+    namespace: {{ $route.namespace | default "default" | quote }}
+{{- end }}
+{{- end }}

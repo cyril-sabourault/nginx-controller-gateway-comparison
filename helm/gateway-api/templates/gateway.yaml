@@ -1,0 +1,37 @@
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: {{ .Values.gateway_name | default "external-http" | quote }}
+  namespace: {{ .Values.gateway_namespace | default "gateway-system" | quote }}
+  annotations:
+    networking.gke.io/certmap: {{ .Values.gateway_cert_map_name | default (printf "gateway-%s-cert-map" .Values.env) | quote }}
+    networking.gke.io/static-ip: {{ .Values.gateway_external_ip_name | default (printf "gateway-%s-external-ip" .Values.env) | quote }}
+spec:
+  gatewayClassName:
+    {{ .Values.gateway_class_name | default "gke-l7-global-external-managed" }}
+  addresses:
+    - type: NamedAddress
+      value: {{ .Values.gateway_external_ip_name | default (printf "gateway-%s-external-ip" .Values.env) | quote }}
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        kinds:
+          - kind: HTTPRoute
+        namespaces:
+          from: All
+---
+apiVersion: networking.gke.io/v1
+kind: GCPGatewayPolicy
+metadata:
+  name: {{ .Values.gateway_policy_name | default "external-http-policy" | quote }}
+  namespace: {{ .Values.gateway_namespace | default "gateway-system" | quote }}
+spec:
+  default:
+    sslPolicy: {{ .Values.gateway_ssl_policy_name | default "ssl-policy" | quote }} 
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Values.gateway_name | default "external-http" | quote }}
+    namespace: {{ .Values.gateway_namespace | default "gateway-system" | quote }}

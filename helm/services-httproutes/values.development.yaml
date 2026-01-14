@@ -1,0 +1,9 @@
+env: development
+
+httpRoutes:
+  new-route-name:
+    namespace: development
+    hostname: "service-url.domain.tld"
+    backend:
+      name: "service-name"
+      port: 80

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: services-httproutes
+description: A Helm chart to deploy HTTPRoutes for services on the gateway
+
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

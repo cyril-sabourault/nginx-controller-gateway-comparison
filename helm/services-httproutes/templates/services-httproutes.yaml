@@ -1,0 +1,63 @@
+{{- range $name, $route := .Values.httpRoutes }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-clusterip" $name }}
+  namespace: {{ $route.namespace | default "default" | quote }}
+spec:
+  ports:
+    - name: {{ default "http" $route.namespace }}
+      port: {{ $route.backend.port }}
+      protocol: TCP
+      targetPort: {{ default "http" $route.namespace }}
+  selector:
+    app.kubernetes.io/instance: {{ $name }}
+    app.kubernetes.io/name: {{ $name }}
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ printf "%s-httproute" $name }}
+  namespace: {{ $route.namespace | default "default" | quote }}
+spec:
+  parentRefs:
+    - name: external-http
+      namespace: gateway-system
+  hostnames:
+    - {{ $route.hostname | quote }}
+  rules:
+    - matches:
+        - path:
+            value: {{ $route.path | default "/" | quote }}
+            type: Prefix
+      backendRefs:
+        - name: {{ $route.backend.name | default (printf "%s-clusterip" $name) | quote }}
+          port: {{ $route.backend.port }}
+          weight: 100
+---
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ printf "%s-healthcheck" $name }}
+  namespace: {{ $route.namespace | default "default" | quote }}
+spec:
+  default:
+    checkIntervalSec: 15
+    timeoutSec: 15
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    logConfig:
+      enabled: true
+    config:
+      type: "HTTP"
+      httpHealthCheck:
+        portSpecification: "USE_SERVING_PORT"
+        requestPath: {{ $route.backend.requestPath | default "/" | quote }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ $route.backend.name }}
+    namespace: {{ $route.namespace | default "default" | quote  }}
+{{- end }}
