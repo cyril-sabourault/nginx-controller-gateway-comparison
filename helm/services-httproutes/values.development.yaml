@@ -4,6 +4,15 @@ httpRoutes:
   new-route-name:
     namespace: development
     hostname: "service-url.domain.tld"
+    path: "/"
     backend:
       name: "service-name"
       port: 80
+      requestPath: "/healthz"
+    backendPolicy:
+      enableIAP: true
+      iapSecretName: "secret-name"
+      IAP_CLIENT_ID: "client-id.apps.domain.tld"
+      sessionAffinityType: "CLIENT_IP"
+      drainingTimeoutSec: 120
+      timeoutSec: 50
